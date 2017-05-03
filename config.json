@@ -1,0 +1,3 @@
+{
+    "mongodb_url": "mongodb://react-chat:1234567@ds029381.mlab.com:29381/react-chat_db"
+}
