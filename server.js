@@ -9,7 +9,7 @@ const User = require('./models/user');
 const Message = require('./models/message');
 
 const mongoose = require("mongoose");
-mongoose.connect('mongodb://test_api:111111@ds029381.mlab.com:29381/react-chat_db');
+mongoose.connect(config.mongodb_url);
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
@@ -40,6 +40,9 @@ router.route("/users")
     if(user){
       response = {"error" : true, "message" : "Username: '" + req.body.username + "'' already exist"}
       res.json(response)
+    } else if(!req.body.username || !req.body.password) {
+      response = {"error" : true, "message" : "Provide valid username and password"}
+      res.json(response)
     } else {
       let password = require('crypto')
                     .createHash('sha1')
@@ -68,6 +71,10 @@ router.route("/users/:id")
   User.findById(req.params.id, { __v: 0, password: 0 }, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "No users with ID: " + req.params.id};
     } else {
       response = {"error" : false, "message" : data};
     }
@@ -79,6 +86,11 @@ router.route("/users/:id")
   User.findById(req.params.id, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "No users with ID: " + req.params.id};
+      res.json(response);
     } else {
       if(req.body.username !== undefined) {
         data.username = req.body.username;
@@ -105,6 +117,11 @@ router.route("/users/:id")
   User.findById(req.params.id, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "No user with ID: " + req.params.id + " to delete"};
+      res.json(response);
     } else {
       User.remove({_id : req.params.id}, (err) => {
         if(err) {
@@ -126,12 +143,11 @@ router.route("/messages")
       response = {"error" : true, "message" : "Failed to fetch data"}
     }
     response = {"error" : false, "message" : data}
-
     res.json(response)
   })
 })
 .post((req, res) => {
-  //params from body request
+  //params from body request TODO validation
   let newMessage = Message({
     msg: req.body.msg,
     user: {
@@ -157,6 +173,10 @@ router.route("/messages/:id")
   Message.findById(req.params.id, { __v: 0 }, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "Found no message with ID: " + req.params.id};
     } else {
       response = {"error" : false, "message" : data};
     }
@@ -168,6 +188,11 @@ router.route("/messages/:id")
   Message.findById(req.params.id, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "Found no message with ID: " + req.params.id};
+      res.json(response);
     } else {
       if(req.body.msg !== undefined) {
         data.msg = req.body.msg;
@@ -188,6 +213,11 @@ router.route("/messages/:id")
   Message.findById(req.params.id, (err, data) => {
     if(err) {
       response = {"error" : true, "message" : "Failed to fetch data"};
+      res.json(response);
+    }
+    if(!data) {
+      response = {"error" : true, "message" : "Found no message with ID: " + req.params.id};
+      res.json(response);
     } else {
       Message.remove({_id : req.params.id}, (err) => {
         if(err) {
