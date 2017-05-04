@@ -12,7 +12,7 @@ const mongoose = require("mongoose");
 mongoose.connect('mongodb://test_api:111111@ds029381.mlab.com:29381/react-chat_db');
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded())
+app.use(bodyParser.urlencoded({extended: true}))
 
 router.get("/",function(req,res){
   res.json({"error" : false, "message" : "Hello World"});
@@ -31,25 +31,34 @@ router.route("/users")
   })
 })
 .post((req, res) => {
-
-  let password =  require('crypto')
-                  .createHash('sha1')
-                  .update(req.body.password)
-                  .digest('base64');
-
-  let newUser = User({
-    username : req.body.username,
-    password : password
-  });
-
+  User.findOne({ "username": req.body.username }, (err, user) => {
   let response = {};
-
-  newUser.save((err) => {
     if(err) {
-      response = {"error" : true, "message" : "Failed to add User"}
+      response = {"error" : true, "message" : "Failed to fetch data"}
+      res.json(response)
     }
-    response = {"error" : false, "message" : "User added successfully"}
-    res.json(response)
+    if(user){
+      response = {"error" : true, "message" : "Username: '" + req.body.username + "'' already exist"}
+      res.json(response)
+    } else {
+      let password = require('crypto')
+                    .createHash('sha1')
+                    .update(req.body.password)
+                    .digest('base64');
+
+      let newUser = User({
+        username : req.body.username,
+        password : password
+      })
+
+      newUser.save((err) => {
+        if(err) {
+          response = {"error" : true, "message" : "Failed to add User"}
+        }
+        response = {"error" : false, "message" : "User: '" + req.body.username + "' added successfully"}
+        res.json(response)
+      })
+    }
   })
 })
 
